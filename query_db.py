@@ -117,12 +117,19 @@ class TongjijuTable(Table):
                 }
         response = requests.get(url,params=params)
         data = response.json() 
-        self.data = data#data['returndata']
+        #self.data = data#data['returndata']
+        if data.get('returndata'):
+            self.data = data.get('returndata')
+        else:
+            self.data = data
         return self.data
     def to_readable(self):
         assert self.data is not None
         data = self.data
-        self.wd_dict = wdnodes2dict(data.get('wdnodes'))
+        wdnodes = data.get('wdnodes')
+        if wdnodes is None:
+            return data    
+        self.wd_dict = wdnodes2dict(wdnodes)
         #print(self.wd_dict)
         datanodes = data.get('datanodes') 
         readable = []
@@ -150,10 +157,10 @@ if __name__ == '__main__':
     db = SpiderDB('tongjiju')
     db.all_docs_readable(1)
     print(db.docs_count())
-    table = db.get_table('AD02')
+    table = db.get_table('A02')
     print(table)
     options = table.get_options()
     print(options)
-    data = table.fetch_data([('reg','000000')]) 
+    data = table.fetch_data([('reg','141')]) 
     print(data)
     print(table.to_readable())
