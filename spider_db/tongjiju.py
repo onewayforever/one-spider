@@ -13,6 +13,7 @@ def wdnodes2dict(nodes):
             code = n.get('code')
             option_dict[code] = {
                 'cname':n.get('cname'),
+                'memo':n.get('memo'),
                 'unit':n.get('unit'),
                 'name':n.get('name'),
                 'exp':n.get('exp'),
@@ -36,8 +37,8 @@ class TongjijuDB(SpiderDB):
         l = list(map(lambda x:(x['query_type'],x['title'],x['trace_name'],x['id_name'],x['trace'],x['id']),data))
         for item in l:
             print(item)
-    def save_table(self,table):
-        wd_dict , data_list = table.format_data()
+    def save_table(self,table,table_data=None):
+        wd_dict , data_list = table.format_data(table_data)
         for wd in wd_dict.keys():
             options = wd_dict[wd]['dict'] 
             for code in options.keys():
@@ -100,9 +101,10 @@ class TongjijuTable(Table):
             self.data = data
         return self.data
 
-    def format_data(self):
-        assert self.data is not None
-        data = self.data
+    def format_data(self,data=None):
+        if data is None:
+            assert self.data is not None
+            data = self.data
         wdnodes = data.get('wdnodes')
         if wdnodes is None:
             return data    
@@ -126,9 +128,10 @@ class TongjijuTable(Table):
             v_list.append(value)
         return self.wd_dict,v_list
         
-    def to_readable(self):
-        assert self.data is not None
-        data = self.data
+    def to_readable(self,data=None):
+        if data is None:
+            assert self.data is not None
+            data = self.data
         wdnodes = data.get('wdnodes')
         if wdnodes is None:
             return data    
