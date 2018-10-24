@@ -23,6 +23,7 @@ class SpiderDB(object):
         #self.spider_db = client['tongjiju_db']
         self.coll_meta = self.spider_db[db_info['meta']]
         self.coll_data= self.spider_db[db_info['data']]
+        self.coll_desc= self.spider_db[db_info['desc']]
 
     def docs_readable(self,docs):
         l = list(map(lambda x:(x['query_type'],(x['title'],x['trace_name'],x['id_name']),(x.get('section'),x['trace'],x['id'])),docs))

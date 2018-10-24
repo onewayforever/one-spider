@@ -9,6 +9,7 @@ My_DBS = {
         'db_name':'tongjiju_db',
         'meta':'tree_meta',
         'data':'tree_data',
+        'desc':'data_desc',
         'table_class':TongjijuTable,
         'db_class':TongjijuDB
     }

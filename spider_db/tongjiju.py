@@ -15,7 +15,10 @@ def wdnodes2dict(nodes):
                 'cname':n.get('cname'),
                 'unit':n.get('unit'),
                 'name':n.get('name'),
-                'exp':n.get('exp')
+                'exp':n.get('exp'),
+                'code':code,
+                'wdcode':key,
+                'wdname':node.get('wdname')
             }
         wd_dict[key] = {
             'name':node.get('wdname'),
@@ -33,6 +36,17 @@ class TongjijuDB(SpiderDB):
         l = list(map(lambda x:(x['query_type'],x['title'],x['trace_name'],x['id_name'],x['trace'],x['id']),data))
         for item in l:
             print(item)
+    def save_table(self,table):
+        wd_dict , data_list = table.format_data()
+        for wd in wd_dict.keys():
+            options = wd_dict[wd]['dict'] 
+            for code in options.keys():
+                obj = options[code]
+                self.coll_desc.update({'code':obj['code'],'wdcode':obj['wdcode']},obj, True )
+        for data in data_list:
+            self.coll_data.update({'code':data['code']},data, True )
+            
+        pass
 
 
 class TongjijuTable(Table):
@@ -85,6 +99,33 @@ class TongjijuTable(Table):
         else:
             self.data = data
         return self.data
+
+    def format_data(self):
+        assert self.data is not None
+        data = self.data
+        wdnodes = data.get('wdnodes')
+        if wdnodes is None:
+            return data    
+        self.wd_dict = wdnodes2dict(wdnodes)
+        print(self.wd_dict)
+        datanodes = data.get('datanodes') 
+        v_list = []
+        for item in datanodes:
+            if item['data']['hasdata'] == False:
+                continue
+            #print(item.get('wds'))
+            value = {}
+            for wd in item.get('wds'):
+                wdcode = wd['wdcode']
+                value[wdcode] = wd['valuecode']
+                value[wdcode+'_name'] = self.wd_dict[wd['wdcode']]['dict'][wd['valuecode']]['name']
+                if wdcode=='zb':
+                    value['unit'] =  self.wd_dict[wd['wdcode']]['dict'][wd['valuecode']]['unit']
+            value['value'] = item['data']['data']
+            value['code'] = item['code']
+            v_list.append(value)
+        return self.wd_dict,v_list
+        
     def to_readable(self):
         assert self.data is not None
         data = self.data
@@ -92,7 +133,7 @@ class TongjijuTable(Table):
         if wdnodes is None:
             return data    
         self.wd_dict = wdnodes2dict(wdnodes)
-        #print(self.wd_dict)
+        print(self.wd_dict)
         datanodes = data.get('datanodes') 
         readable = []
         for item in datanodes:
@@ -100,6 +141,8 @@ class TongjijuTable(Table):
                 continue
             #print(item.get('wds'))
             wds = list(map(lambda x: self.wd_dict[x['wdcode']]['dict'][x['valuecode']]['name'],item.get('wds')))
+            unit = None
+
             readable.append((wds,item['data']['data'])) 
         return readable
         items = list(map(lambda x:x['data'],datanodes))
